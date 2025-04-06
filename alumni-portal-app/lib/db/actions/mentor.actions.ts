@@ -17,9 +17,27 @@ import Mentor from "../models/Mentor";
  * @param company Current company (optional)
  * @param role Current role (optional)
  * @param linkedin LinkedIn URL (optional)
+ * @param availability When the mentor is available (optional)
+ * @param mentorshipFormats Preferred mentorship formats (optional)
+ * @param mentorshipTopics Specific topics they can mentor on (optional)
+ * @param maxMentees Maximum number of mentees they can support (optional)
  */
 export async function applyAsMentor({
+  userId,
   email,
+  name,
+  specializations,
+  experience,
+  bio,
+  graduated,
+  branch,
+  company,
+  role,
+  linkedin,
+  availability,
+  mentorshipFormats,
+  mentorshipTopics,
+  maxMentees
 }: {
   userId: string;
   email: string;
@@ -32,6 +50,10 @@ export async function applyAsMentor({
   company?: string;
   role?: string;
   linkedin?: string;
+  availability?: string[];
+  mentorshipFormats?: string[];
+  mentorshipTopics?: string[];
+  maxMentees?: number;
 }) {
   try {
     await getDBConnection();
@@ -42,6 +64,30 @@ export async function applyAsMentor({
     if (existingApplication) {
       return { success: false, message: "You have already submitted an application." };
     }
+
+    // Create new mentor application
+    const newMentor = new Mentor({
+      userId,
+      email,
+      name,
+      specializations,
+      experience,
+      bio,
+      graduated,
+      branch,
+      company,
+      role,
+      linkedin,
+      // New mentorship fields
+      availability,
+      mentorshipFormats,
+      mentorshipTopics,
+      maxMentees: maxMentees || 1,
+      status: 'pending'
+    });
+
+    // Save to database
+    await newMentor.save();
 
     revalidatePath('/dashboard/alumni');
 

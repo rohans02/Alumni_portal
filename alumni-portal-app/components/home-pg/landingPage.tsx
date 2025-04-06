@@ -126,7 +126,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center text-white text-center h-[50vh] px-4 mb-8">
+      <section id="home" className="relative flex flex-col items-center justify-center text-white text-center h-[50vh] px-4 mb-8">
         <h1 className="font-serif text-5xl mb-3 tracking-tight">
           Who Will You Discover?
         </h1>

@@ -30,6 +30,25 @@ const SPECIALIZATIONS = [
   "Embedded Systems"
 ];
 
+// Mentorship format options
+const MENTORSHIP_FORMATS = [
+  "One-on-one meetings",
+  "Virtual meetings",
+  "Email exchanges",
+  "Phone calls",
+  "Group sessions"
+];
+
+// Availability options
+const AVAILABILITY_OPTIONS = [
+  "Weekday mornings",
+  "Weekday afternoons",
+  "Weekday evenings",
+  "Weekend mornings",
+  "Weekend afternoons",
+  "Weekend evenings"
+];
+
 interface FormData {
   graduated: string;
   branch: string;
@@ -38,6 +57,8 @@ interface FormData {
   company: string;
   role: string;
   linkedin: string;
+  maxMentees: string; // Changed to string for form input but will be converted to number
+  mentorshipTopics: string;
 }
 
 export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () => void }) {
@@ -45,6 +66,8 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [selectedSpecializations, setSelectedSpecializations] = useState<string[]>([]);
+  const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
+  const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>({
     graduated: "",
     branch: "",
@@ -52,7 +75,9 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
     bio: "",
     company: "",
     role: "",
-    linkedin: ""
+    linkedin: "",
+    maxMentees: "1",
+    mentorshipTopics: ""
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,15 +85,15 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
   useEffect(() => {
     const fetchUserData = async () => {
       if (!isLoaded || !user) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Get branch and graduation year from user metadata with type assertions
         const userMetadata = user.publicMetadata as Record<string, string>;
         const branch = userMetadata.branch;
         const graduationYear = userMetadata.graduationYear;
-        
+
         if (branch || graduationYear) {
           setFormData(prev => ({
             ...prev,
@@ -82,23 +107,33 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
         setIsLoading(false);
       }
     };
-    
+
     fetchUserData();
   }, [user, isLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user?.id || !user?.fullName || !user?.primaryEmailAddress?.emailAddress) {
       toast.error("User information not available");
       return;
     }
-    
+
     if (selectedSpecializations.length === 0) {
       toast.error("Please select at least one specialization");
       return;
     }
-    
+
+    if (selectedAvailability.length === 0) {
+      toast.error("Please select at least one availability option");
+      return;
+    }
+
+    if (selectedFormats.length === 0) {
+      toast.error("Please select at least one mentorship format");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -114,13 +149,20 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
         branch: formData.branch,
         company: formData.company,
         role: formData.role,
-        linkedin: formData.linkedin
+        linkedin: formData.linkedin,
+        // New mentorship fields
+        availability: selectedAvailability,
+        mentorshipFormats: selectedFormats,
+        mentorshipTopics: formData.mentorshipTopics.split(',').map(topic => topic.trim()),
+        maxMentees: parseInt(formData.maxMentees) || 1
       });
-      
+
       if (result.success) {
         setShowSuccessDialog(true);
         // Reset form
         setSelectedSpecializations([]);
+        setSelectedAvailability([]);
+        setSelectedFormats([]);
         setFormData({
           graduated: "",
           branch: "",
@@ -128,9 +170,11 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
           bio: "",
           company: "",
           role: "",
-          linkedin: ""
+          linkedin: "",
+          maxMentees: "1",
+          mentorshipTopics: ""
         });
-        
+
         // Call the success callback if provided
         if (onSuccess) {
           onSuccess();
@@ -154,6 +198,24 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
       setSelectedSpecializations(selectedSpecializations.filter(s => s !== specialization));
     } else {
       setSelectedSpecializations([...selectedSpecializations, specialization]);
+    }
+  };
+
+  // Toggle availability option
+  const toggleAvailability = (option: string) => {
+    if (selectedAvailability.includes(option)) {
+      setSelectedAvailability(selectedAvailability.filter(a => a !== option));
+    } else {
+      setSelectedAvailability([...selectedAvailability, option]);
+    }
+  };
+
+  // Toggle mentorship format
+  const toggleFormat = (format: string) => {
+    if (selectedFormats.includes(format)) {
+      setSelectedFormats(selectedFormats.filter(f => f !== format));
+    } else {
+      setSelectedFormats([...selectedFormats, format]);
     }
   };
 
@@ -181,7 +243,6 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
                 required
                 readOnly={Boolean((user?.publicMetadata as Record<string, string>)?.graduationYear)}
               />
-              {/* Check for metadata with type assertion */}
               {Boolean((user?.publicMetadata as Record<string, string>)?.graduationYear) && (
                 <p className="text-xs text-gray-500 mt-1">
                   Auto-filled from your profile
@@ -200,7 +261,6 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
                 required
                 readOnly={Boolean((user?.publicMetadata as Record<string, string>)?.branch)}
               />
-              {/* Check for metadata with type assertion */}
               {Boolean((user?.publicMetadata as Record<string, string>)?.branch) && (
                 <p className="text-xs text-gray-500 mt-1">
                   Auto-filled from your profile
@@ -246,19 +306,19 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
         {/* Experience Section */}
         <div>
           <h3 className="text-lg font-medium text-gray-800 mb-4">Expertise & Experience</h3>
-          
+
           <div className="space-y-4">
             <div>
               <Label className="text-gray-700 block mb-2">Areas of Specialization</Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2">
                 {SPECIALIZATIONS.map((specialization) => (
                   <div key={specialization} className="flex items-center space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id={`specialization-${specialization}`}
                       checked={selectedSpecializations.includes(specialization)}
                       onCheckedChange={() => toggleSpecialization(specialization)}
                     />
-                    <label 
+                    <label
                       htmlFor={`specialization-${specialization}`}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
@@ -268,7 +328,7 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
                 ))}
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="experience" className="text-gray-700">Years of Experience</Label>
               <Input
@@ -280,7 +340,7 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="bio" className="text-gray-700">Professional Bio</Label>
               <Textarea
@@ -294,10 +354,89 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
             </div>
           </div>
         </div>
-        
+
+        {/* Mentorship Preferences Section */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-800 mb-4">Mentorship Preferences</h3>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-gray-700 block mb-2">Availability</Label>
+              <p className="text-sm text-gray-500 mb-2">When are you typically available for mentoring?</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2">
+                {AVAILABILITY_OPTIONS.map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`availability-${option}`}
+                      checked={selectedAvailability.includes(option)}
+                      onCheckedChange={() => toggleAvailability(option)}
+                    />
+                    <label
+                      htmlFor={`availability-${option}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {option}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-gray-700 block mb-2">Preferred Mentorship Formats</Label>
+              <p className="text-sm text-gray-500 mb-2">How would you like to connect with mentees?</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2">
+                {MENTORSHIP_FORMATS.map((format) => (
+                  <div key={format} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`format-${format}`}
+                      checked={selectedFormats.includes(format)}
+                      onCheckedChange={() => toggleFormat(format)}
+                    />
+                    <label
+                      htmlFor={`format-${format}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {format}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mentorshipTopics" className="text-gray-700">Topics You Can Mentor On</Label>
+              <p className="text-sm text-gray-500 mb-2">Specific topics you're comfortable mentoring on (comma-separated)</p>
+              <Textarea
+                id="mentorshipTopics"
+                value={formData.mentorshipTopics}
+                onChange={(e) => setFormData({ ...formData, mentorshipTopics: e.target.value })}
+                placeholder="e.g. Career guidance, Interview preparation, Project management, Technical skills"
+                className="border-gray-300 focus:ring-orange-500 focus:border-orange-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maxMentees" className="text-gray-700">Maximum Number of Mentees</Label>
+              <p className="text-sm text-gray-500 mb-2">How many mentees can you support at once?</p>
+              <Input
+                id="maxMentees"
+                type="number"
+                min="1"
+                max="10"
+                value={formData.maxMentees}
+                onChange={(e) => setFormData({ ...formData, maxMentees: e.target.value })}
+                className="w-24 border-gray-300 focus:ring-orange-500 focus:border-orange-500"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="border-t pt-4 flex justify-end">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="bg-orange-600 hover:bg-orange-700"
             disabled={isSubmitting}
           >

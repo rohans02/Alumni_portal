@@ -6,7 +6,7 @@ import { Phone, Globe, Mail, Youtube, Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white py-8 relative overflow-hidden">
+    <footer id="contact" className="bg-black text-white py-8 relative overflow-hidden">
       {/* Blue Ribbon on the right */}
       <div className="absolute right-16 top-24 bottom-0 w-24 border-blue-500 border-[50px] border-t-transparent"></div>
 

@@ -16,7 +16,11 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  Trash2
+  Trash2,
+  Clock,
+  Users,
+  MessageSquare,
+  Tag
 } from "lucide-react";
 import { getAllMentors, updateMentorStatus, deleteMentor } from "@/lib/db/actions/mentor.actions";
 import ConfirmationDialog from "@/components/ui/confirmation-dialog";
@@ -33,6 +37,10 @@ interface MentorApplication {
   company?: string;
   role?: string;
   linkedin?: string;
+  availability?: string[];
+  mentorshipFormats?: string[];
+  mentorshipTopics?: string[];
+  maxMentees?: number;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
 }
@@ -48,12 +56,10 @@ export default function MentorApplicationsManager() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [mentorToDelete, setMentorToDelete] = useState<MentorApplication | null>(null);
 
-  // Fetch mentor applications
   useEffect(() => {
     const fetchApplications = async () => {
       try {
         setLoading(true);
-        // Get all applications (including pending, approved, and rejected)
         const data = await getAllMentors(false);
         setApplications(data);
       } catch (err) {
@@ -67,36 +73,29 @@ export default function MentorApplicationsManager() {
     fetchApplications();
   }, []);
 
-  // Filter applications based on status and search term
   const filteredApplications = applications.filter(app => {
     const matchesStatus = filter === 'all' || app.status === filter;
-    
     const matchesSearch = !searchTerm || (
       app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.specializations.some(spec => spec.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (app.company && app.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (app.role && app.role.toLowerCase().includes(searchTerm.toLowerCase()))
+      (app.role && app.role.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.mentorshipTopics && app.mentorshipTopics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase())))
     );
-    
     return matchesStatus && matchesSearch;
   });
 
-  // Handle application approval/rejection
   const handleStatusUpdate = async (id: string, status: 'approved' | 'rejected') => {
     setProcessingId(id);
-    
     try {
       const result = await updateMentorStatus(id, status);
-      
       if (result.success) {
-        // Update the application in the local state
         setApplications(current => 
           current.map(app => 
             app._id === id ? { ...app, status } : app
           )
         );
-        
         toast.success(result.message);
       } else {
         toast.error(result.message);
@@ -109,7 +108,6 @@ export default function MentorApplicationsManager() {
     }
   };
 
-  // Handle mentor deletion with confirmation
   const handleDeleteConfirm = (mentor: MentorApplication) => {
     setMentorToDelete(mentor);
     setShowDeleteConfirmation(true);
@@ -117,19 +115,13 @@ export default function MentorApplicationsManager() {
 
   const handleDeleteMentor = async () => {
     if (!mentorToDelete) return;
-    
     setProcessingId(mentorToDelete._id);
-    
     try {
-      // Get current user's email (you may need to adjust this based on your auth implementation)
-      const result = await deleteMentor(mentorToDelete._id, mentorToDelete.email, true); // true indicates admin
-      
+      const result = await deleteMentor(mentorToDelete._id, mentorToDelete.email, true);
       if (result.success) {
-        // Remove the application from the local state
         setApplications(current => 
           current.filter(app => app._id !== mentorToDelete._id)
         );
-        
         toast.success(result.message);
       } else {
         toast.error(result.message);
@@ -143,12 +135,10 @@ export default function MentorApplicationsManager() {
     }
   };
 
-  // Toggle application details
   const toggleDetails = (id: string) => {
     setExpandedApplication(current => current === id ? null : id);
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -157,7 +147,6 @@ export default function MentorApplicationsManager() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
@@ -172,7 +161,6 @@ export default function MentorApplicationsManager() {
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Mentor Applications</h2>
         
         <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
-          {/* Filters */}
           <div className="flex flex-wrap gap-2">
             <Button 
               variant={filter === 'all' ? "default" : "outline"}
@@ -207,7 +195,6 @@ export default function MentorApplicationsManager() {
             </Button>
           </div>
           
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
@@ -220,7 +207,6 @@ export default function MentorApplicationsManager() {
           </div>
         </div>
         
-        {/* Summary */}
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
             <div className="text-gray-500 text-sm mb-1">Total Applications</div>
@@ -240,7 +226,6 @@ export default function MentorApplicationsManager() {
           </div>
         </div>
         
-        {/* Applications List */}
         {filteredApplications.length === 0 ? (
           <div className="bg-gray-50 p-8 rounded-md text-center">
             <p className="text-gray-500">No applications match your criteria.</p>
@@ -252,7 +237,6 @@ export default function MentorApplicationsManager() {
                 key={application._id} 
                 className="border rounded-lg overflow-hidden bg-white shadow-sm"
               >
-                {/* Header */}
                 <div 
                   className="p-4 border-b cursor-pointer hover:bg-gray-50"
                   onClick={() => toggleDetails(application._id)}
@@ -290,7 +274,6 @@ export default function MentorApplicationsManager() {
                   </div>
                 </div>
                 
-                {/* Details */}
                 {expandedApplication === application._id && (
                   <div className="p-4 bg-gray-50">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -336,6 +319,38 @@ export default function MentorApplicationsManager() {
                             </a>
                           </div>
                         )}
+
+                        {application.availability && application.availability.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Availability</h4>
+                            <div className="flex items-start">
+                              <Clock className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
+                              <div>
+                                <ul className="text-gray-700 list-disc list-inside">
+                                  {application.availability.map(time => (
+                                    <li key={time}>{time}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {application.mentorshipFormats && application.mentorshipFormats.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Preferred Formats</h4>
+                            <div className="flex items-start">
+                              <MessageSquare className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
+                              <div>
+                                <ul className="text-gray-700 list-disc list-inside">
+                                  {application.mentorshipFormats.map(format => (
+                                    <li key={format}>{format}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       
                       <div>
@@ -354,6 +369,34 @@ export default function MentorApplicationsManager() {
                             ))}
                           </div>
                         </div>
+
+                        {application.mentorshipTopics && application.mentorshipTopics.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Mentorship Topics</h4>
+                            <div className="flex items-start">
+                              <Tag className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {application.mentorshipTopics.map(topic => (
+                                  <Badge key={topic} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {topic}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {application.maxMentees && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Maximum Mentees</h4>
+                            <div className="flex items-center">
+                              <Users className="h-4 w-4 mr-2 text-gray-500" />
+                              <span className="text-gray-700">
+                                {application.maxMentees} {application.maxMentees === 1 ? "mentee" : "mentees"}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                         
                         <div className="mb-4">
                           <h4 className="text-sm font-medium text-gray-500 mb-1">Application Date</h4>
@@ -367,7 +410,6 @@ export default function MentorApplicationsManager() {
                       </div>
                     </div>
                     
-                    {/* Actions */}
                     <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between">
                       <Button 
                         variant="outline" 
@@ -430,7 +472,6 @@ export default function MentorApplicationsManager() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       {mentorToDelete && (
         <ConfirmationDialog
           isOpen={showDeleteConfirmation}
@@ -454,4 +495,4 @@ export default function MentorApplicationsManager() {
       )}
     </>
   );
-} 
+}

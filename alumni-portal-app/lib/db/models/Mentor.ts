@@ -13,6 +13,10 @@ export interface IMentor extends Document {
   company?: string;
   role?: string;
   linkedin?: string;
+  availability?: string[];
+  mentorshipFormats?: string[];
+  mentorshipTopics?: string[];
+  maxMentees?: number;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
   updatedAt: Date;
@@ -76,6 +80,22 @@ const MentorSchema = new Schema<IMentor>(
         message: 'LinkedIn URL must be from linkedin.com'
       }
     },
+    availability: {
+      type: [String],
+      default: []
+    },
+    mentorshipFormats: {
+      type: [String],
+      default: []
+    },
+    mentorshipTopics: {
+      type: [String],
+      default: []
+    },
+    maxMentees: {
+      type: Number,
+      default: 1
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
@@ -98,4 +118,4 @@ try {
   Mentor = mongoose.model<IMentor>('Mentor', MentorSchema);
 }
 
-export default Mentor; 
+export default Mentor;

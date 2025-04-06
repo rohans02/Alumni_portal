@@ -110,7 +110,7 @@ export default function EventsSection() {
   }, []);
 
   return (
-    <section className="flex flex-col items-center justify-center bg-gray-50 px-4 md:px-8 py-8">
+    <section id="event" className="flex flex-col items-center justify-center bg-gray-50 px-4 md:px-8 py-8">
       <div className="max-w-7xl w-full">
         <motion.div
           ref={headerRef}

@@ -76,7 +76,7 @@ export default function AlumniCarousel() {
   }
 
   return (
-    <section className="relative bg-gray-900 py-20">
+    <section id="stories" className="relative bg-gray-900 py-20">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           {/* Carousel */}
