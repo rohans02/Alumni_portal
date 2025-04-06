@@ -406,7 +406,7 @@ export default function MentorApplicationForm({ onSuccess }: { onSuccess?: () =>
 
             <div className="space-y-2">
               <Label htmlFor="mentorshipTopics" className="text-gray-700">Topics You Can Mentor On</Label>
-              <p className="text-sm text-gray-500 mb-2">Specific topics you're comfortable mentoring on (comma-separated)</p>
+              <p className="text-sm text-gray-500 mb-2">Specific topics you&apos;re comfortable mentoring on (comma-separated)</p>
               <Textarea
                 id="mentorshipTopics"
                 value={formData.mentorshipTopics}
