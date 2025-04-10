@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { getAllPosts, likePost, deletePost } from "@/lib/db/actions/post.actions";
+import { getAllPosts, deletePost } from "@/lib/db/actions/post.actions";
 import { MessageSquare, Trash2, Filter, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import {

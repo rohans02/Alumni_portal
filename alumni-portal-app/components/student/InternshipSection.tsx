@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Briefcase, Calendar, MapPin, DollarSign, Clock, ExternalLink, IndianRupee } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Clock, ExternalLink, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAllInternships } from "@/lib/db/actions/internship.actions";
 

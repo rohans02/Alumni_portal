@@ -6,6 +6,7 @@ import { getAllStories, toggleStoryPublishStatus, deleteStory } from "@/lib/db/a
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Trash2, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 
 interface Story {
   _id: string;
@@ -139,7 +140,7 @@ export default function StoryManagement() {
 
             {story.image && (
               <div className="relative h-48 w-full overflow-hidden rounded-md bg-gray-100">
-                <img 
+                <Image 
                   src={story.image}
                   alt={`Image for ${story.title}`}
                   className="h-full w-full object-cover"
