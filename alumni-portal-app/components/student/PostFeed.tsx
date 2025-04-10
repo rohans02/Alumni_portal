@@ -3,9 +3,19 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { getAllPosts, likePost } from "@/lib/db/actions/post.actions";
-import { Heart, MessageSquare, Share, Tag } from "lucide-react";
+import { getAllPosts, likePost, deletePost } from "@/lib/db/actions/post.actions";
+import { Heart, MessageSquare, Share, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { getCurrentRole } from "@/lib/roles";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Comment {
   content: string;
@@ -35,13 +45,24 @@ export default function PostFeed() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
   useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const role = await getCurrentRole();
+        setIsAdmin(role === "admin");
+      } catch (err) {
+        console.error("Error checking role:", err);
+      }
+    };
+
     const fetchPosts = async () => {
       try {
         setLoading(true);
         const data = await getAllPosts();
-        // Show all posts instead of filtering for student posts only
         setPosts(data);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -51,18 +72,18 @@ export default function PostFeed() {
       }
     };
 
+    checkRole();
     fetchPosts();
   }, []);
 
   const handleLike = async (postId: string) => {
     try {
       const updatedPost = await likePost(postId);
-      
-      // Update the posts state with the new like count
+
       setPosts(posts.map(post => 
         post._id === postId ? { ...post, likes: updatedPost.likes } : post
       ));
-      
+
       toast.success("Post liked!");
     } catch (error) {
       console.error("Error liking post:", error);
@@ -70,14 +91,34 @@ export default function PostFeed() {
     }
   };
 
-  // Get all unique tags from posts
+  const handleDeleteClick = (postId: string) => {
+    setPostToDelete(postId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      await deletePost(postToDelete);
+
+      setPosts(posts.filter(post => post._id !== postToDelete));
+
+      toast.success("Post deleted successfully!");
+      setDeleteDialogOpen(false);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post. Please try again.");
+    }
+  };
+
   const allTags = Array.from(
     new Set(
       posts.flatMap(post => post.tags || [])
     )
   );
 
-  // Filter posts by active tag if one is selected
   const filteredPosts = activeTag 
     ? posts.filter(post => post.tags?.includes(activeTag))
     : posts;
@@ -109,7 +150,6 @@ export default function PostFeed() {
 
   return (
     <div>
-      {/* Tags filter */}
       {allTags.length > 0 && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by tag:</h3>
@@ -145,40 +185,48 @@ export default function PostFeed() {
       <div className="space-y-6">
         {filteredPosts.map((post) => (
           <div key={post._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-            {/* Post Header */}
             <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
-                  {post.author.charAt(0)}
-                </div>
-                <div className="ml-3">
-                  <div className="flex items-center">
-                    <h3 className="font-medium text-gray-800">{post.author}</h3>
-                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      post.isStudentPost ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {post.isStudentPost ? 'Student' : 'Alumni'}
-                    </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
+                    {post.author.charAt(0)}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                  </p>
+                  <div className="ml-3">
+                    <div className="flex items-center">
+                      <h3 className="font-medium text-gray-800">{post.author}</h3>
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        post.isStudentPost ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
+                      }`}>
+                        {post.isStudentPost ? 'Student' : 'Alumni'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
                 </div>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleDeleteClick(post._id)}
+                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    aria-label="Delete post"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                )}
               </div>
             </div>
             
-            {/* Post Content */}
             <div className="p-4">
               <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
               <p className="text-gray-700 whitespace-pre-line">{post.content}</p>
               
-              {/* Tags */}
               {post.tags && post.tags.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {post.tags.map(tag => (
                     <span 
                       key={tag} 
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 cursor-pointer"
                       onClick={() => setActiveTag(tag)}
                     >
                       <Tag className="w-3 h-3 mr-1" />
@@ -189,7 +237,6 @@ export default function PostFeed() {
               )}
             </div>
             
-            {/* Post Image (if any) */}
             {post.image && (
               <div className="relative h-64 w-full">
                 <Image 
@@ -201,7 +248,6 @@ export default function PostFeed() {
               </div>
             )}
             
-            {/* Post Actions */}
             <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
               <div className="flex space-x-6">
                 <button 
@@ -221,11 +267,28 @@ export default function PostFeed() {
                 <span className="text-sm">Share</span>
               </button>
             </div>
-            
-            {/* Comments section could be added here */}
           </div>
         ))}
       </div>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Post</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-} 
+}

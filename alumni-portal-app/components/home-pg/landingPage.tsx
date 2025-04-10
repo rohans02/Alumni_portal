@@ -73,7 +73,7 @@ export default function HomePage() {
       </div>
 
       {/* Header with Bookmark Tag */}
-      <header className="relative z-30 bg-black/80 w-full py-4">
+      <header className="relative z-30 w-full py-4">
         <div className="container mx-auto px-4 flex items-center justify-between">
           {/* Logo on the Left */}
           <div className="flex items-center space-x-3">
@@ -81,11 +81,15 @@ export default function HomePage() {
               <Image
                 src="/assets/logo-mmcoe.png"
                 alt="State College Logo"
-                width={150} // Increased width
+                width={112} // Increased width
                 height={0} // Increased height
-                className="h-16" // Adjust height while keeping aspect ratio
+                className="h-28" // Adjust height while keeping aspect ratio
               />
             </Link>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-semibold text-gray-200">Marathwada Mitra Mandal&apos;s</h1>
+              <h1 className="text-3xl font-bold text-white">Alumni Association</h1>
+              </div>
           </div>
 
           {/* Navigation and Social Icons on the Right */}
@@ -96,7 +100,7 @@ export default function HomePage() {
                 <Link
                   key={index}
                   href={href}
-                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-blue-500 transition-colors"
+                  className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-blue-500 transition-colors"
                   aria-label={label}
                 >
                   <Icon className="h-4 w-4 text-white" />
@@ -126,9 +130,12 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="relative flex flex-col items-center justify-center text-white text-center h-[50vh] px-4 mb-8">
-        <h1 className="font-serif text-5xl mb-3 tracking-tight">
-          Who Will You Discover?
+      <section
+        id="home"
+        className="relative flex flex-col items-center justify-center text-white text-center h-[45vh] px-4 mb-8"
+      >
+        <h1 className="text-5xl mb-3 tracking-tight">
+        Connect. Inspire. Thrive.
         </h1>
         <p className="text-lg md:text-xl font-light tracking-wider max-w-3xl px-6 rounded-lg py-2">
           Connect with your Alumni community. Explore your official destination
@@ -149,13 +156,17 @@ export default function HomePage() {
               </SignUpButton>
             </div>
           ) : (
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/dashboard">
+              <button className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium shadow-md">
+                Dashboard
+              </button>
+            </Link>
           )}
         </div>
       </section>
 
       {/* Feature Cards */}
-      <section className="relative flex-1 overflow-y-auto mt-12">
+      <section className="relative flex-1 overflow-y-auto mt-8">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {features.map(({ title, icon: Icon, description }, index) => (

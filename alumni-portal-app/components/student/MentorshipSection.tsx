@@ -30,6 +30,12 @@ interface Mentor {
   linkedin?: string;
   email?: string;
   createdAt: string;
+  // Additional mentorship attributes
+  availability?: string[];
+  mentorshipFormats?: string[];
+  mentorshipTopics?: string[];
+  maxMentees?: number;
+  status: string;
 }
 
 export default function MentorshipSection() {
@@ -296,6 +302,66 @@ export default function MentorshipSection() {
                         ))}
                       </div>
                     </div>
+                    
+                    {/* Mentorship details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      {/* Availability */}
+                      {mentor.availability && mentor.availability.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-700 mb-2">
+                            Availability
+                          </h4>
+                          <ul className="list-disc list-inside text-sm text-gray-600">
+                            {mentor.availability.map((time) => (
+                              <li key={time}>{time}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {/* Mentorship Formats */}
+                      {mentor.mentorshipFormats && mentor.mentorshipFormats.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-700 mb-2">
+                            Mentorship Formats
+                          </h4>
+                          <ul className="list-disc list-inside text-sm text-gray-600">
+                            {mentor.mentorshipFormats.map((format) => (
+                              <li key={format}>{format}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Mentorship Topics */}
+                    {mentor.mentorshipTopics && mentor.mentorshipTopics.length > 0 && (
+                      <div>
+                        <h4 className="text-md font-medium text-gray-700 mb-2">
+                          Mentorship Topics
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {mentor.mentorshipTopics.map((topic) => (
+                            <Badge
+                              key={topic}
+                              variant="secondary"
+                              className="bg-blue-50 text-blue-700"
+                            >
+                              {topic}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Max Mentees */}
+                    {mentor.maxMentees && (
+                      <div className="mt-2">
+                        <span className="text-sm text-gray-600">
+                          <strong>Currently accepting:</strong> Up to {mentor.maxMentees} mentees
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowRight,
   Play,
+  Award,
+  ExternalLink,
 } from "lucide-react";
 
 const galleryItems = [
@@ -32,9 +33,31 @@ const galleryItems = [
   },
 ];
 
-export default function GallerySection() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+const featuredAlumni = [
+  {
+    name: "Dr. Ananya Sharma",
+    image: "https://images.pexels.com/photos/2613260/pexels-photo-2613260.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    year: "2010",
+    accomplishment: "Leading AI Researcher at Google DeepMind",
+    linkedIn: "#",
+  },
+  {
+    name: "Vikram Mehta",
+    image: "https://images.pexels.com/photos/997489/pexels-photo-997489.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    year: "2005",
+    accomplishment: "Founder & CEO of TechInnovate Solutions",
+    linkedIn: "#",
+  },
+  {
+    name: "Priya Patel",
+    image: "https://images.pexels.com/photos/2218786/pexels-photo-2218786.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    year: "2012",
+    accomplishment: "NASA Aerospace Engineer",
+    linkedIn: "#",
+  },
+];
 
+export default function GallerySection() {
   return (
     <section id="gallery" className="bg-gray-900 py-20 px-4 md:px-8 relative">
       <div className="max-w-7xl mx-auto">
@@ -121,16 +144,61 @@ export default function GallerySection() {
               </CardContent>
             </Card>
 
-            {/* Calendar Widget */}
-            <Card className="bg-gray-800 border-0 flex">
-              <CardContent className="p-6 flex justify-center h-96">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="text-white"
-                  style={{ height: "100%" }}
-                />
+            {/* Featured Alumni Spotlight */}
+            <Card className="bg-gray-800 border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <Award className="text-blue-500" />
+                  <h3 className="text-lg font-semibold text-white">
+                    Alumni Spotlight
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  {featuredAlumni.map((alumni, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 pb-4 border-b border-gray-700 last:border-0 last:pb-0"
+                    >
+                      <Image
+                        src={alumni.image}
+                        alt={alumni.name}
+                        width={50}
+                        height={50}
+                        className="rounded-full object-cover h-12 w-12"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-white font-medium">
+                            {alumni.name}
+                          </h4>
+                          <span className="text-xs text-gray-400">
+                            Class of {alumni.year}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-1">
+                          {alumni.accomplishment}
+                        </p>
+                        <a
+                          href={alumni.linkedIn}
+                          className="inline-flex items-center text-xs text-blue-400 mt-2 hover:text-blue-300"
+                        >
+                          LinkedIn Profile{" "}
+                          <ExternalLink className="ml-1 h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 w-full bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+                >
+                  View All Alumni
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
               </CardContent>
             </Card>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Briefcase, Calendar, MapPin, DollarSign, Clock, Trash2 } from "lucide-react";
+import { Briefcase, Calendar, MapPin, DollarSign, Clock, Trash2, IndianRupee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAllInternships, deleteInternship } from "@/lib/db/actions/internship.actions";
 import { toast } from "sonner";
@@ -133,7 +133,7 @@ export default function InternshipListing({ onInternshipDeleted, updateTrigger }
               </div>
               
               <div className="flex items-center text-gray-600">
-                <DollarSign className="h-4 w-4 mr-2 flex-shrink-0" />
+                <IndianRupee className="h-4 w-4 mr-2 flex-shrink-0" />
                 <span>{internship.stipend}</span>
               </div>
             </div>

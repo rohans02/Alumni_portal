@@ -17,6 +17,7 @@ export default function StorySubmission() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    image: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +42,7 @@ export default function StorySubmission() {
       setFormData({
         title: "",
         content: "",
+        image: "",
       });
       router.refresh();
     } catch (error) {
@@ -78,6 +80,16 @@ export default function StorySubmission() {
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="image">Image URL</Label>
+          <Input
+            id="image"
+            value={formData.image}
+            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            placeholder="Enter the URL of an image for your story"
+          />
+        </div>
+
         <Button 
           type="submit" 
           className="w-full bg-orange-600 hover:bg-orange-700"
@@ -88,4 +100,4 @@ export default function StorySubmission() {
       </form>
     </div>
   );
-} 
+}

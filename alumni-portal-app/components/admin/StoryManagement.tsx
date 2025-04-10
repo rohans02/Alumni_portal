@@ -15,6 +15,7 @@ interface Story {
   authorEmail?: string;
   graduationYear?: string;
   branch?: string;
+  image?: string;
   isPublished: boolean;
   createdAt: string;
 }
@@ -22,7 +23,7 @@ interface Story {
 export default function StoryManagement() {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError,] = useState<string | null>(null);
 
   const fetchStories = async () => {
     try {
@@ -135,6 +136,20 @@ export default function StoryManagement() {
                 </Button>
               </div>
             </div>
+
+            {story.image && (
+              <div className="relative h-48 w-full overflow-hidden rounded-md bg-gray-100">
+                <img 
+                  src={story.image}
+                  alt={`Image for ${story.title}`}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    // Replace broken image with a placeholder
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x200?text=Image+Not+Available";
+                  }}
+                />
+              </div>
+            )}
 
             <div className="prose max-w-none">
               <p className="text-gray-600 line-clamp-3">{story.content}</p>

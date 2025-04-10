@@ -9,6 +9,8 @@ import {
   Award,
   Search,
   ChevronDown,
+  MessageSquare,
+  LogOut,
 } from "lucide-react";
 import { getAllUsers, getAnalyticsData, UserData } from "@/lib/users";
 import UserEditModal from "./UserEditModal";
@@ -19,12 +21,12 @@ import StoryManagement from "./StoryManagement";
 import InternshipForm from "./InternshipForm";
 import InternshipListing from "./InternshipListing";
 import MentorApplicationsManager from "./MentorApplicationsManager";
+import AdminPostFeed from "./AdminPostFeed";
 import { Button } from "@/components/ui/button";
 import { useClerk } from "@clerk/nextjs";
-import { LogOut } from "lucide-react";
 
 // Tabs definition
-type TabType = "users" | "analytics" | "content" | "internships" | "mentors";
+type TabType = "users" | "analytics" | "content" | "internships" | "mentors" | "posts";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("users");
@@ -188,6 +190,19 @@ export default function AdminDashboard() {
               >
                 <Users className="h-5 w-5" />
                 <span>User Management</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab("posts")}
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-md ${
+                  activeTab === "posts"
+                    ? "bg-orange-600 text-white"
+                    : "text-gray-300 hover:bg-gray-800"
+                }`}
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span>Posts</span>
               </button>
             </li>
             <li>
@@ -437,6 +452,21 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Posts Tab */}
+          {activeTab === "posts" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Community Posts Management
+                </h2>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <AdminPostFeed />
               </div>
             </div>
           )}
